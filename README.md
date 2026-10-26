@@ -7,7 +7,7 @@
 - Section: CSE GEN AI S-24
 ## Deployment
 
-- Live deployment URL: https://lab-01-mauve.vercel.app
+- Live deployment URL: [https://lab-01-mauve.vercel.app](https://node-modules-lab-1.vercel.app/)
 
 ## Project objective
 
