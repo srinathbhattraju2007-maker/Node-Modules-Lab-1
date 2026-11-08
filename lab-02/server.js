@@ -8,9 +8,23 @@ const app = express();
 app.use(express.json());
 
 const dbPath = path.join(__dirname, "books.db");
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 let db;
+
+// Root route — API overview
+app.get("/", (req, res) => {
+    res.status(200).json({
+        message: "Node Lab 2 — Books CRUD API",
+        endpoints: {
+            "GET /books/": "Get all books",
+            "GET /books/:bookId/": "Get a single book",
+            "POST /books/": "Add a new book",
+            "PUT /books/:bookId/": "Update a book",
+            "DELETE /books/:bookId/": "Delete a book"
+        }
+    });
+});
 
 // GET all books
 app.get("/books/", async (req, res) => {
