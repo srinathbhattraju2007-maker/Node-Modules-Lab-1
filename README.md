@@ -8,7 +8,7 @@
 
 ## Live Link
 
-- **Deployment URL:** https://backend-lab-reports-4.onrender.com
+- **Deployment URL:** 
 
 *(Hosted on Render's free tier. The first request after a period of inactivity can take up to a minute while the server wakes up. Data resets on restart and is re-seeded automatically.)*
 
