@@ -1,0 +1,82 @@
+--- fixed/app.js	2026-11-05 04:42:12.895755972 +0000
++++ broken/app.js	2026-11-05 04:43:00.914446373 +0000
+@@ -1,7 +1,7 @@
+ // app.js - builds the Express app. Kept separate from server.js so the tests
+ // can use it without opening a network port.
+ const express = require("express");
+-const { createBooksRouter } = require("./routes/books");
++const { createBooksRouter } = require("./route/books");
+ const { sendError, sendSuccess } = require("./utils/respond");
+ 
+ function createApp(db) {
+--- fixed/server.js	2026-11-05 04:43:26.811509345 +0000
++++ broken/server.js	2026-11-05 04:43:26.811728855 +0000
+@@ -4,10 +4,10 @@
+ const { seedBooks } = require("./seed");
+ const { createApp } = require("./app");
+ 
+-const PORT = Number(process.env.PORT) || 3000;
++const PORT = 3000;
+ 
+ async function main() {
+-  const db = await openDb();
++  const db = await openDb(":memory:");
+ 
+   if (process.env.AUTO_SEED !== "false") {
+     const added = await seedBooks(db);
+@@ -15,33 +15,11 @@
+   }
+ 
+   const app = createApp(db);
+-
+-  // A port conflict (EADDRINUSE) gets a clear message instead of a stack trace.
+-  // Express 5 passes the error to the listen callback; Express 4 emits an
+-  // "error" event on the server. Both paths use this one function.
+-  const onListenError = (err) => {
+-    if (err.code === "EADDRINUSE") {
+-      console.error(`Port ${PORT} is already in use. Stop the other process or set a different PORT in .env.`);
+-    } else {
+-      console.error("Server error:", err.message);
+-    }
+-    process.exit(1);
+-  };
+-
+-  const server = app.listen(PORT, (err) => {
+-    if (err) return onListenError(err);
++  app.listen(PORT, (err) => {
++    if (err) throw err;
+     console.log(`Server running at http://localhost:${PORT}`);
+   });
+-  server.on("error", onListenError);
+ 
+-  const shutdown = () => {
+-    server.close(async () => {
+-      await db.close();
+-      process.exit(0);
+-    });
+-  };
+-  process.on("SIGINT", shutdown);
+-  process.on("SIGTERM", shutdown);
+ }
+ 
+ main().catch((err) => {
+--- fixed/routes/books.js	2026-11-05 04:42:49.967768615 +0000
++++ broken/routes/books.js	2026-11-05 04:43:00.914515969 +0000
+@@ -40,7 +40,7 @@
+       // Text columns sort case-insensitively (A-Z, not "Z before a").
+       const sortColumn = order_by === "title" || order_by === "author" ? `${order_by} COLLATE NOCASE` : order_by;
+ 
+-      const { total } = await db.get(`SELECT COUNT(*) AS total FROM books ${where}`, params);
++      const { total } = await db.get(`SELECT COUNT(*) AS total FROM book ${where}`, params);
+       const books = await db.all(
+         `SELECT id, title, author, price FROM books ${where}
+          ORDER BY ${sortColumn} ${order}, id ASC
+@@ -59,7 +59,7 @@
+     "/:id",
+     validateId,
+     asyncHandler(async (req, res) => {
+-      const book = await db.get("SELECT id, title, author, price FROM books WHERE id = ?", [req.bookId]);
++      const book = db.get("SELECT id, title, author, price FROM books WHERE id = ?", [req.bookId]);
+       if (!book) return sendError(res, 404, `Book with id ${req.bookId} not found`);
+       return sendSuccess(res, 200, "Book fetched successfully", book);
+     })
